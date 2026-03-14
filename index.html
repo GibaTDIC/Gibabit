@@ -15,7 +15,7 @@
 <title>Gibabit - Inovação e Tecnologia na Educação</title>
 
 <style>
-* {
+* * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -38,12 +38,14 @@ body {
 }
 
 /* HEADER */
+
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 40px;
     background: var(--header-bg);
+    flex-wrap: wrap;
 }
 
 .logo {
@@ -92,12 +94,20 @@ header {
     background: linear-gradient(90deg, transparent, var(--orange-vibrant), transparent);
 }
 
+/* MENU */
+
+nav {
+    display: flex;
+    align-items: center;
+}
+
 nav a {
     margin-left: 20px;
     text-decoration: none;
     color: white;
     font-weight: bold;
     transition: color 0.3s;
+    white-space: nowrap;
 }
 
 nav a:hover {
@@ -105,6 +115,7 @@ nav a:hover {
 }
 
 /* HERO */
+
 .hero {
     text-align: center;
     padding: 80px 20px;
@@ -147,6 +158,7 @@ nav a:hover {
 }
 
 /* FERRAMENTAS */
+
 .secao {
     padding: 60px 40px;
     text-align: center;
@@ -201,6 +213,7 @@ nav a:hover {
 }
 
 /* SOBRE */
+
 .sobre {
     max-width: 800px;
     margin: auto;
@@ -210,6 +223,7 @@ nav a:hover {
 }
 
 /* FOOTER */
+
 footer {
     background: #020617;
     text-align: center;
@@ -217,6 +231,44 @@ footer {
     margin-top: 40px;
     font-size: 14px;
     color: #94a3b8;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 768px) {
+
+header{
+    flex-direction: column;
+    padding:15px 20px;
+}
+
+.logo img{
+    height:40px;
+}
+
+nav{
+    margin-top:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+nav a{
+    margin:5px 10px;
+    font-size:14px;
+}
+
+.hero{
+    padding:60px 20px;
+}
+
+.hero img{
+    width:140px;
+}
+
+.logo-text{
+    font-size:26px;
+}
+
 }
 </style>
 
