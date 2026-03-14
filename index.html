@@ -270,26 +270,68 @@ nav a{
 }
 
 }
+    /* BOTÃO MENU */
+
+.menu-toggle{
+display:none;
+font-size:28px;
+cursor:pointer;
+}
+
+/* RESPONSIVO */
+
+@media (max-width:768px){
+
+.menu-toggle{
+display:block;
+color:white;
+}
+
+nav{
+display:none;
+flex-direction:column;
+width:100%;
+text-align:center;
+margin-top:10px;
+}
+
+nav a{
+margin:10px 0;
+}
+
+nav.active{
+display:flex;
+}
+
+}
 </style>
 
 </head>
 <body>
 
 <header>
-    <div class="logo">
-        <img src="images/logo2.png" alt="Logo Gibabit">
-    </div>
-    <nav>
-        <a href="#">Home</a>
-        <a href="#ferramentas">Ferramentas</a>
-        <a href="#sobre">Sobre</a>
-        <a href="https://wa.me/5565999946895" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 5px;">
-    Contato
-</a>
-    </nav>
-</header>
 
+<div class="logo">
+<img src="images/logo2.png" alt="Logo Gibabit">
+</div>
+
+<div class="menu-toggle" onclick="toggleMenu()">
+☰
+</div>
+
+<nav id="menu">
+<a href="#">Home</a>
+<a href="#ferramentas">Ferramentas</a>
+<a href="#sobre">Sobre</a>
+
+<a href="https://wa.me/5565999946895" target="_blank">
+<img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png"
+style="width:20px;height:20px;vertical-align:middle;margin-right:5px;">
+Contato
+</a>
+
+</nav>
+</header>
 <section class="hero">
     <div class="conteudo-central">
         <img src="images/logo1.png" alt="Logo Gibabit">
@@ -344,6 +386,13 @@ nav a{
     <br><br>
     © 2026
 </footer>
+<script>
 
+function toggleMenu(){
+const menu = document.getElementById("menu");
+menu.classList.toggle("active");
+}
+
+</script>
 </body>
 </html>
