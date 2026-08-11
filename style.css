@@ -243,5 +243,6 @@ main { padding: var(--space-6) var(--space-6) 60px; max-width:1360px; margin:0 a
     .logo-text { font-size:21px; }
     main { padding:18px 16px 50px; }
     .search-wrap { order:3; max-width:100%; }
+    .header-actions { flex-basis:100%; margin-left:0; justify-content:flex-end; }
     .form-row { grid-template-columns: 1fr; }
 }
