@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "homegibabit"
+  },
+  "targets": {
+    "homegibabit": {
+      "hosting": {
+        "gibabit": [
+          "gibabit"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

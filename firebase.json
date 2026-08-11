@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "target": "gibabit",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
