@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <div class="search-wrap">
+    <div class="search-wrap" id="searchWrap">
         <span class="search-icon">&#128269;</span>
         <input type="text" id="searchInput" placeholder="Buscar por nome, categoria, autor...">
     </div>
@@ -68,9 +68,16 @@
 
     </div>
 
-    <div id="alunoView" class="hidden">
-        <div class="section-title">Meus aplicativos</div>
-        <div class="aluno-grid" id="alunoGrid"></div>
+    <div id="alunoView" class="hidden aluno-view">
+        <div class="orbit-stage" id="orbitStage" onclick="clearOrbitFocus()">
+            <div class="orbit-ring ring-1"></div>
+            <div class="orbit-ring ring-2"></div>
+            <div class="orbit-center">
+                <img src="images/logo1.png" alt="Gibabit" onerror="this.style.display='none';">
+            </div>
+            <div class="orbit-planets" id="orbitPlanets"></div>
+        </div>
+        <div id="orbitFocusCard"></div>
         <a href="#" class="modo-completo-link" onclick="setViewMode('completo');return false;">Modo completo</a>
     </div>
 

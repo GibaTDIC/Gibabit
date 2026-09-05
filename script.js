@@ -44,7 +44,8 @@ let state = {
     openMenuId: null,
     wizard: null,
     loginError: "",
-    viewMode: new URLSearchParams(location.search).get("modo") === "aluno" ? "aluno" : "completo"
+    viewMode: new URLSearchParams(location.search).get("modo") === "aluno" ? "aluno" : "completo",
+    alunoFocusId: null
 };
 
 // Alterna entre o portal completo e o autoatendimento do aluno.
@@ -52,6 +53,10 @@ let state = {
 // direto pro modo aluno num tablet, sem afetar o link padrão do site.
 function setViewMode(mode) {
     state.viewMode = mode;
+    state.search = "";
+    state.alunoFocusId = null;
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) searchInput.value = "";
     const url = new URL(location.href);
     if (mode === "aluno") url.searchParams.set("modo", "aluno");
     else url.searchParams.delete("modo");
@@ -191,12 +196,18 @@ function renderAll() {
     document.getElementById("completoView").classList.toggle("hidden", isAluno);
     document.getElementById("alunoView").classList.toggle("hidden", !isAluno);
     document.getElementById("headerActions").classList.toggle("hidden", isAluno);
+    document.getElementById("searchWrap").classList.toggle("hidden", isAluno);
     document.getElementById("logoSub").textContent = isAluno ? "Autoatendimento do aluno" : "Painel de aplicações";
 
     document.getElementById("btnNovoHeader").classList.toggle("hidden", !state.adminMode);
     document.getElementById("btnCategoriasHeader").classList.toggle("hidden", !state.adminMode);
     document.getElementById("visaoGeralWrap").classList.toggle("hidden", !state.adminMode);
 }
+
+/* ===== MODO ALUNO — SISTEMA PLANETÁRIO =====
+   Um app em foco por vez: primeiro toque seleciona (aproxima, ilumina,
+   mostra nome/descrição/botão e pausa a órbita); segundo toque no
+   mesmo app (ou no botão "Entrar") abre; tocar fora devolve ao repouso. */
 
 function getAlunoApps() {
     let list = state.apps.filter(a => a.situacao === "publicado" && Array.isArray(a.permissoes) && a.permissoes.includes("aluno"));
@@ -208,20 +219,97 @@ function getAlunoApps() {
     return list;
 }
 
+function attachOrbitResizeObserver(stage) {
+    if (stage.__orbitObserverAttached) return;
+    stage.__orbitObserverAttached = true;
+    const update = () => stage.style.setProperty("--stage-size", stage.offsetWidth + "px");
+    update();
+    if (window.ResizeObserver) new ResizeObserver(update).observe(stage);
+    else window.addEventListener("resize", update);
+}
+
 function renderAlunoGrid() {
-    const grid = document.getElementById("alunoGrid");
-    if (!grid) return;
+    const stage = document.getElementById("orbitStage");
+    const planetsRoot = document.getElementById("orbitPlanets");
+    if (!stage || !planetsRoot) return;
+    attachOrbitResizeObserver(stage);
+
     const list = getAlunoApps();
+
+    if (state.alunoFocusId && !list.some(a => a.id === state.alunoFocusId)) {
+        state.alunoFocusId = null;
+    }
+
     if (!list.length) {
-        grid.innerHTML = `<div class="empty-state">Nenhum aplicativo disponível no momento.</div>`;
+        planetsRoot.innerHTML = "";
+        renderOrbitFocusCard(null);
+        document.getElementById("orbitFocusCard").innerHTML = `<div class="empty-state">Nenhum aplicativo disponível no momento.</div>`;
         return;
     }
-    grid.innerHTML = list.map(a => `
-        <div class="aluno-tile" onclick="openApp('${a.id}')">
-            <div class="aluno-tile-icon" style="background:linear-gradient(135deg, ${a.corPrimaria || '#334155'}, ${a.corSecundaria || '#475569'});">${a.icone || '📦'}</div>
-            <div class="aluno-tile-name">${a.nome}</div>
+
+    const RING1_MAX = 6;
+    const ring1 = list.slice(0, RING1_MAX);
+    const ring2 = list.slice(RING1_MAX);
+
+    const buildRing = (items, ringRatio, duration) => items.map((a, i) => {
+        const delay = -((i / items.length) * duration);
+        const isFocused = state.alunoFocusId === a.id;
+        return `
+        <div class="orbit-pivot" style="animation-duration:${duration}s; animation-delay:${delay}s;">
+            <div class="orbit-radius" style="--ring-ratio:${ringRatio};">
+                <div class="orbit-counter" style="animation-duration:${duration}s; animation-delay:${delay}s;">
+                    <button type="button" class="orbit-planet ${isFocused ? 'is-focused' : ''}" onclick="handleOrbitPlanetClick(event,'${a.id}')" aria-label="${escapeAttr(a.nome)}">
+                        <span class="orbit-planet-icon" style="background:linear-gradient(135deg, ${a.corPrimaria || '#334155'}, ${a.corSecundaria || '#475569'});">${a.icone || '📦'}</span>
+                        <span class="orbit-planet-name">${a.nome}</span>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+
+    planetsRoot.innerHTML = buildRing(ring1, 0.34, 90) + buildRing(ring2, 0.47, 130);
+    planetsRoot.classList.toggle("has-focus", !!state.alunoFocusId);
+    planetsRoot.classList.toggle("paused", !!state.alunoFocusId);
+
+    renderOrbitFocusCard(list.find(a => a.id === state.alunoFocusId) || null);
+}
+
+function renderOrbitFocusCard(app) {
+    const root = document.getElementById("orbitFocusCard");
+    if (!root) return;
+    if (!app) { root.innerHTML = ""; return; }
+    root.innerHTML = `
+        <div class="orbit-focus-card">
+            <div class="orbit-focus-icon" style="background:linear-gradient(135deg, ${app.corPrimaria || '#334155'}, ${app.corSecundaria || '#475569'});">${app.icone || '📦'}</div>
+            <div class="orbit-focus-name">${app.nome}</div>
+            <div class="orbit-focus-phrase">${app.descricao || ''}</div>
+            <button type="button" class="orbit-enter-btn" onclick="enterFocusedApp()">Entrar</button>
         </div>
-    `).join("");
+    `;
+}
+
+function handleOrbitPlanetClick(e, id) {
+    e.stopPropagation();
+    if (state.alunoFocusId === id) {
+        state.alunoFocusId = null;
+        openApp(id);
+    } else {
+        state.alunoFocusId = id;
+        renderAlunoGrid();
+    }
+}
+
+function clearOrbitFocus() {
+    if (!state.alunoFocusId) return;
+    state.alunoFocusId = null;
+    renderAlunoGrid();
+}
+
+function enterFocusedApp() {
+    if (!state.alunoFocusId) return;
+    const id = state.alunoFocusId;
+    state.alunoFocusId = null;
+    openApp(id);
 }
 
 function renderAdminStatus() {
