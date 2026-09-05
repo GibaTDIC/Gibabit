@@ -226,20 +226,22 @@ main { padding: var(--space-6) var(--space-6) 60px; max-width:1360px; margin:0 a
 .orbit-planets.paused .orbit-counter { animation-play-state: paused; }
 
 .orbit-pivot {
-    position:absolute; inset:0; animation-name:orbit-spin; animation-timing-function:linear; animation-iteration-count:infinite;
+    position:absolute; inset:0; pointer-events:none;
+    animation-name:orbit-spin; animation-timing-function:linear; animation-iteration-count:infinite;
 }
 .orbit-radius {
-    position:absolute; top:50%; left:50%;
+    position:absolute; top:50%; left:50%; pointer-events:none;
     transform: translate(-50%,-50%) translateX(calc(var(--stage-size, 320px) * var(--ring-ratio, 0.34)));
 }
 .orbit-counter {
+    pointer-events:none;
     animation-name:orbit-spin-reverse; animation-timing-function:linear; animation-iteration-count:infinite;
 }
 @keyframes orbit-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 @keyframes orbit-spin-reverse { from { transform:rotate(0deg); } to { transform:rotate(-360deg); } }
 
 .orbit-planet {
-    display:flex; flex-direction:column; align-items:center; gap:6px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;
     width: clamp(56px, 16vmin, 82px); border:none; background:none; padding:6px; margin:-6px;
     cursor:pointer; transition: transform .5s ease, opacity .5s ease;
 }

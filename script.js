@@ -223,8 +223,11 @@ function getAlunoApps() {
 function attachOrbitResizeObserver(stage) {
     if (stage.__orbitObserverAttached) return;
     stage.__orbitObserverAttached = true;
-    const update = () => stage.style.setProperty("--stage-size", stage.offsetWidth + "px");
-    update();
+    // Recalcula tamanho/raio junto com renderAlunoGrid() pra manter os
+    // planetas sem se sobrepor (e sem "roubar" o toque um do outro)
+    // também depois de girar a tela ou redimensionar a janela.
+    const update = () => { stage.style.setProperty("--stage-size", stage.offsetWidth + "px"); renderAlunoGrid(); };
+    stage.style.setProperty("--stage-size", stage.offsetWidth + "px");
     if (window.ResizeObserver) new ResizeObserver(update).observe(stage);
     else window.addEventListener("resize", update);
 }
@@ -251,22 +254,33 @@ function renderAlunoGrid() {
     const RING1_MAX = 6;
     const ring1 = list.slice(0, RING1_MAX);
     const ring2 = list.slice(RING1_MAX);
+    const stageSize = stage.offsetWidth || 320;
 
-    const buildRing = (items, ringRatio, duration) => items.map((a, i) => {
-        const delay = -((i / items.length) * duration);
-        const isFocused = state.alunoFocusId === a.id;
-        return `
-        <div class="orbit-pivot" style="animation-duration:${duration}s; animation-delay:${delay}s;">
-            <div class="orbit-radius" style="--ring-ratio:${ringRatio};">
-                <div class="orbit-counter" style="animation-duration:${duration}s; animation-delay:${delay}s;">
-                    <button type="button" class="orbit-planet ${isFocused ? 'is-focused' : ''}" onclick="handleOrbitPlanetClick(event,'${a.id}')" aria-label="${escapeAttr(a.nome)}">
-                        <span class="orbit-planet-icon" style="background:linear-gradient(135deg, ${a.corPrimaria || '#334155'}, ${a.corSecundaria || '#475569'});">${a.icone || '📦'}</span>
-                        <span class="orbit-planet-name">${a.nome}</span>
-                    </button>
+    // Calcula o tamanho de cada planeta a partir do espaço real que ele
+    // tem na órbita (circunferência ÷ quantidade de apps), garantindo
+    // que dois planetas nunca cheguem a se sobrepor e "roubar" o toque
+    // um do outro — em vez de um tamanho fixo que só cabia bem com 1 ou 2 apps.
+    const buildRing = (items, ringRatio, duration) => {
+        if (!items.length) return "";
+        const radius = stageSize * ringRatio;
+        const arcPerItem = (2 * Math.PI * radius) / items.length;
+        const planetSize = Math.max(44, Math.min(82, arcPerItem * 0.62));
+        return items.map((a, i) => {
+            const delay = -((i / items.length) * duration);
+            const isFocused = state.alunoFocusId === a.id;
+            return `
+            <div class="orbit-pivot" style="animation-duration:${duration}s; animation-delay:${delay}s;">
+                <div class="orbit-radius" style="--ring-ratio:${ringRatio};">
+                    <div class="orbit-counter" style="animation-duration:${duration}s; animation-delay:${delay}s;">
+                        <button type="button" class="orbit-planet ${isFocused ? 'is-focused' : ''}" style="width:${planetSize}px;" onclick="handleOrbitPlanetClick(event,'${a.id}')" aria-label="${escapeAttr(a.nome)}">
+                            <span class="orbit-planet-icon" style="background:linear-gradient(135deg, ${a.corPrimaria || '#334155'}, ${a.corSecundaria || '#475569'});">${a.icone || '📦'}</span>
+                            <span class="orbit-planet-name">${a.nome}</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </div>`;
-    }).join("");
+            </div>`;
+        }).join("");
+    };
 
     planetsRoot.innerHTML = buildRing(ring1, 0.34, 90) + buildRing(ring2, 0.47, 130);
     planetsRoot.classList.toggle("has-focus", !!state.alunoFocusId);
