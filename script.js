@@ -43,8 +43,21 @@ let state = {
     selectedIds: new Set(),
     openMenuId: null,
     wizard: null,
-    loginError: ""
+    loginError: "",
+    viewMode: new URLSearchParams(location.search).get("modo") === "aluno" ? "aluno" : "completo"
 };
+
+// Alterna entre o portal completo e o autoatendimento do aluno.
+// Guarda o modo na URL (?modo=aluno) pra dar pra salvar um atalho
+// direto pro modo aluno num tablet, sem afetar o link padrão do site.
+function setViewMode(mode) {
+    state.viewMode = mode;
+    const url = new URL(location.href);
+    if (mode === "aluno") url.searchParams.set("modo", "aluno");
+    else url.searchParams.delete("modo");
+    history.replaceState(null, "", url);
+    renderAll();
+}
 
 function uid() { return 'a' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
 function nowIso() { return new Date().toISOString(); }
@@ -172,10 +185,43 @@ function renderAll() {
     renderGrid();
     renderSelectionBar();
     renderAdminStatus();
+    renderAlunoGrid();
+
+    const isAluno = state.viewMode === "aluno";
+    document.getElementById("completoView").classList.toggle("hidden", isAluno);
+    document.getElementById("alunoView").classList.toggle("hidden", !isAluno);
+    document.getElementById("headerActions").classList.toggle("hidden", isAluno);
+    document.getElementById("logoSub").textContent = isAluno ? "Autoatendimento do aluno" : "Painel de aplicações";
 
     document.getElementById("btnNovoHeader").classList.toggle("hidden", !state.adminMode);
     document.getElementById("btnCategoriasHeader").classList.toggle("hidden", !state.adminMode);
     document.getElementById("visaoGeralWrap").classList.toggle("hidden", !state.adminMode);
+}
+
+function getAlunoApps() {
+    let list = state.apps.filter(a => a.situacao === "publicado" && Array.isArray(a.permissoes) && a.permissoes.includes("aluno"));
+    if (state.search.trim()) {
+        const q = state.search.trim().toLowerCase();
+        list = list.filter(a => a.nome.toLowerCase().includes(q) || (a.descricao || "").toLowerCase().includes(q));
+    }
+    list.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    return list;
+}
+
+function renderAlunoGrid() {
+    const grid = document.getElementById("alunoGrid");
+    if (!grid) return;
+    const list = getAlunoApps();
+    if (!list.length) {
+        grid.innerHTML = `<div class="empty-state">Nenhum aplicativo disponível no momento.</div>`;
+        return;
+    }
+    grid.innerHTML = list.map(a => `
+        <div class="aluno-tile" onclick="openApp('${a.id}')">
+            <div class="aluno-tile-icon" style="background:linear-gradient(135deg, ${a.corPrimaria || '#334155'}, ${a.corSecundaria || '#475569'});">${a.icone || '📦'}</div>
+            <div class="aluno-tile-name">${a.nome}</div>
+        </div>
+    `).join("");
 }
 
 function renderAdminStatus() {
@@ -639,6 +685,7 @@ async function onDrop(e, targetId) {
 document.getElementById("searchInput").addEventListener("input", (e) => {
     state.search = e.target.value;
     renderGrid();
+    renderAlunoGrid();
 });
 document.getElementById("sortSelect").addEventListener("change", (e) => {
     state.sortBy = e.target.value;

@@ -196,6 +196,25 @@ main { padding: var(--space-6) var(--space-6) 60px; max-width:1360px; margin:0 a
 
 .empty-state { text-align:center; padding:60px 20px; color:var(--slate-light); }
 
+/* ===== ALUNO MODE ===== */
+.aluno-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:16px; margin-top:16px; }
+.aluno-tile {
+    background: var(--card-bg); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+    padding:26px 16px; display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center;
+    cursor:pointer; transition: transform .15s, border-color .15s; -webkit-tap-highlight-color: transparent;
+}
+.aluno-tile:hover, .aluno-tile:active { transform: translateY(-2px); border-color: var(--orange-vibrant); }
+.aluno-tile-icon {
+    width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:32px;
+}
+.aluno-tile-name { font-size:14px; font-weight:700; }
+
+.modo-completo-link {
+    display:block; width:fit-content; margin:50px auto 0; font-size:11px; color:var(--slate-light);
+    text-decoration:none; opacity:0.4; padding:6px;
+}
+.modo-completo-link:hover { opacity:0.9; }
+
 /* selection bar */
 .selection-bar {
     position: fixed; bottom:20px; left:50%; transform:translateX(-50%);

@@ -15,7 +15,7 @@
         <img src="images/logo1.png" alt="Gibabit" class="logo-img" onerror="this.style.display='none';">
         <div>
             <div class="logo-text">Giba<span>bit</span></div>
-            <div class="logo-sub">Painel de aplicações</div>
+            <div class="logo-sub" id="logoSub">Painel de aplicações</div>
         </div>
     </div>
 
@@ -24,8 +24,9 @@
         <input type="text" id="searchInput" placeholder="Buscar por nome, categoria, autor...">
     </div>
 
-    <div class="header-actions">
+    <div class="header-actions" id="headerActions">
         <div class="admin-toggle-wrap" id="adminStatusWrap"></div>
+        <button class="btn btn-ghost btn-sm" onclick="setViewMode('aluno')" title="Autoatendimento do aluno">&#127891; Modo Aluno</button>
         <button class="btn btn-primary hidden" id="btnNovoHeader" onclick="openWizard(null)">+ Novo Programa</button>
         <button class="btn btn-ghost hidden" id="btnCategoriasHeader" onclick="openCategoriesModal()" title="Categorias">&#9881;</button>
         <div class="avatar-circle">P</div>
@@ -34,34 +35,44 @@
 
 <main>
 
-    <div id="visaoGeralWrap">
-        <div class="section-title">Visão geral</div>
-        <div class="stats-row" id="statsRow"></div>
-    </div>
+    <div id="completoView">
 
-    <div class="section-title">Categorias</div>
-    <div class="chips-row" id="chipsRow"></div>
-
-    <div id="adminPanelWrap"></div>
-
-    <div id="favoritesWrap"></div>
-
-    <div id="recentWrap"></div>
-
-    <div class="section-title" style="margin-top:30px;">
-        <div class="grid-header">
-            <span>Aplicativos</span>
-            <select class="sort-select" id="sortSelect">
-                <option value="meus">Mais usados por você</option>
-                <option value="ordem">Ordem personalizada</option>
-                <option value="nome">Nome</option>
-                <option value="categoria">Categoria</option>
-                <option value="data">Data (mais recente)</option>
-                <option value="acessos">Mais utilizados (geral)</option>
-            </select>
+        <div id="visaoGeralWrap">
+            <div class="section-title">Visão geral</div>
+            <div class="stats-row" id="statsRow"></div>
         </div>
+
+        <div class="section-title">Categorias</div>
+        <div class="chips-row" id="chipsRow"></div>
+
+        <div id="adminPanelWrap"></div>
+
+        <div id="favoritesWrap"></div>
+
+        <div id="recentWrap"></div>
+
+        <div class="section-title" style="margin-top:30px;">
+            <div class="grid-header">
+                <span>Aplicativos</span>
+                <select class="sort-select" id="sortSelect">
+                    <option value="meus">Mais usados por você</option>
+                    <option value="ordem">Ordem personalizada</option>
+                    <option value="nome">Nome</option>
+                    <option value="categoria">Categoria</option>
+                    <option value="data">Data (mais recente)</option>
+                    <option value="acessos">Mais utilizados (geral)</option>
+                </select>
+            </div>
+        </div>
+        <div class="cards" id="cardsGrid"></div>
+
     </div>
-    <div class="cards" id="cardsGrid"></div>
+
+    <div id="alunoView" class="hidden">
+        <div class="section-title">Meus aplicativos</div>
+        <div class="aluno-grid" id="alunoGrid"></div>
+        <a href="#" class="modo-completo-link" onclick="setViewMode('completo');return false;">Modo completo</a>
+    </div>
 
 </main>
 
