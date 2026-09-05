@@ -583,8 +583,14 @@ async function openApp(id) {
 
     renderAll();
 
-    if (app.url && app.url !== "#") {
-        window.open(construirUrlComEmail(app.url), "_blank");
+    // No modo aluno, usa a URL alternativa (ex: uma tela específica
+    // do sistema) quando o admin configurou uma; senão cai na URL padrão.
+    const targetUrl = (state.viewMode === "aluno" && app.urlAluno && app.urlAluno.trim())
+        ? app.urlAluno.trim()
+        : app.url;
+
+    if (targetUrl && targetUrl !== "#") {
+        window.open(construirUrlComEmail(targetUrl), "_blank");
     } else {
         alert(app.nome + " ainda não possui uma URL configurada.");
     }
@@ -700,7 +706,7 @@ function blankApp() {
         id: null, nome:"", descricao:"", descricaoCompleta:"", categoria: state.categories[0]?.id || "",
         versao:"1.0", autor:"", responsavel:"",
         icone:"📦", imagem:"", corPrimaria:"#ff7a00", corSecundaria:"#ff9f4b",
-        permissoes: [], url:"", tipo:"pagina_interna",
+        permissoes: [], url:"", urlAluno:"", tipo:"pagina_interna",
         status:"ativo", situacao:"rascunho", publicado:false,
         destacar:{ mostrarHome:true, destaque:false, novo:false, beta:false }
     };
@@ -788,6 +794,10 @@ function renderWizardStep() {
     } else if (w.step === 3) {
         body.innerHTML = `
             <div class="form-group"><label>URL do sistema</label><input type="text" id="f_url" value="${escapeAttr(d.url)}" placeholder="https://... ou # se ainda não existir"></div>
+            <div class="form-group">
+                <label>URL alternativa para o Modo Aluno (opcional)</label>
+                <input type="text" id="f_urlAluno" value="${escapeAttr(d.urlAluno)}" placeholder="Deixe em branco para usar a URL do sistema acima">
+            </div>
             <div class="form-group"><label>Tipo</label>
                 <select id="f_tipo">
                     <option value="pagina_interna" ${d.tipo==='pagina_interna'?'selected':''}>Página interna</option>
@@ -845,6 +855,7 @@ function collectStep() {
         d.permissoes = perfis.filter(p => document.getElementById("f_perm_"+p).checked);
     } else if (w.step === 3) {
         d.url = document.getElementById("f_url").value.trim();
+        d.urlAluno = document.getElementById("f_urlAluno").value.trim();
         d.tipo = document.getElementById("f_tipo").value;
     } else if (w.step === 4) {
         d.status = document.getElementById("f_status").value;
