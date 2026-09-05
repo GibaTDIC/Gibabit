@@ -276,8 +276,8 @@ main { padding: var(--space-6) var(--space-6) 60px; max-width:1360px; margin:0 a
 }
 
 .modo-completo-link {
-    display:block; width:fit-content; margin:36px auto 0; font-size:11px; color:var(--slate-light);
-    text-decoration:none; opacity:0.4; padding:6px;
+    margin-left:auto; font-size:11px; color:var(--slate-light);
+    text-decoration:none; opacity:0.35; padding:6px; white-space:nowrap;
 }
 .modo-completo-link:hover { opacity:0.9; }
 

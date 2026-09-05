@@ -196,6 +196,7 @@ function renderAll() {
     document.getElementById("completoView").classList.toggle("hidden", isAluno);
     document.getElementById("alunoView").classList.toggle("hidden", !isAluno);
     document.getElementById("headerActions").classList.toggle("hidden", isAluno);
+    document.getElementById("modoCompletoLink").classList.toggle("hidden", !isAluno);
     document.getElementById("searchWrap").classList.toggle("hidden", isAluno);
     document.getElementById("logoSub").textContent = isAluno ? "Autoatendimento do aluno" : "Painel de aplicações";
 
