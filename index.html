@@ -35,7 +35,7 @@
     <a href="#" class="modo-completo-link hidden" id="modoCompletoLink" onclick="setViewMode('completo');return false;">Modo completo</a>
 </header>
 
-<main>
+<main id="mainContent">
 
     <div id="completoView">
 
@@ -72,14 +72,13 @@
 
     <div id="alunoView" class="hidden aluno-view">
         <div class="orbit-stage" id="orbitStage" onclick="clearOrbitFocus()">
-            <div class="orbit-ring ring-1"></div>
-            <div class="orbit-ring ring-2"></div>
+            <div id="orbitRings"></div>
             <div class="orbit-center">
                 <img src="images/logo1.png" alt="Gibabit" onerror="this.style.display='none';">
             </div>
             <div class="orbit-planets" id="orbitPlanets"></div>
         </div>
-        <div id="orbitFocusCard"></div>
+        <div id="orbitFocusCard" onclick="clearOrbitFocus()"></div>
     </div>
 
 </main>

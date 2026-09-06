@@ -199,6 +199,11 @@ function renderAll() {
     document.getElementById("modoCompletoLink").classList.toggle("hidden", !isAluno);
     document.getElementById("searchWrap").classList.toggle("hidden", isAluno);
     document.getElementById("logoSub").textContent = isAluno ? "Autoatendimento do aluno" : "Painel de aplicações";
+    document.getElementById("mainContent").classList.toggle("aluno-active", isAluno);
+    // Modo aluno é telona única, sem rolagem — o conteúdo é dimensionado
+    // pra caber, e isso aqui é o cinto de segurança que garante que
+    // nada vaza pra fora da tela em nenhum navegador.
+    document.body.classList.toggle("no-scroll", isAluno);
 
     document.getElementById("btnNovoHeader").classList.toggle("hidden", !state.adminMode);
     document.getElementById("btnCategoriasHeader").classList.toggle("hidden", !state.adminMode);
@@ -235,6 +240,7 @@ function attachOrbitResizeObserver(stage) {
 function renderAlunoGrid() {
     const stage = document.getElementById("orbitStage");
     const planetsRoot = document.getElementById("orbitPlanets");
+    const ringsRoot = document.getElementById("orbitRings");
     if (!stage || !planetsRoot) return;
     attachOrbitResizeObserver(stage);
 
@@ -246,25 +252,49 @@ function renderAlunoGrid() {
 
     if (!list.length) {
         planetsRoot.innerHTML = "";
-        renderOrbitFocusCard(null);
-        document.getElementById("orbitFocusCard").innerHTML = `<div class="empty-state">Nenhum aplicativo disponível no momento.</div>`;
+        if (ringsRoot) ringsRoot.innerHTML = "";
+        renderOrbitFocusCard(null, "Nenhum aplicativo disponível no momento.");
         return;
     }
 
-    const RING1_MAX = 6;
-    const ring1 = list.slice(0, RING1_MAX);
-    const ring2 = list.slice(RING1_MAX);
     const stageSize = stage.offsetWidth || 320;
 
-    // Calcula o tamanho de cada planeta a partir do espaço real que ele
-    // tem na órbita (circunferência ÷ quantidade de apps), garantindo
-    // que dois planetas nunca cheguem a se sobrepor e "roubar" o toque
-    // um do outro — em vez de um tamanho fixo que só cabia bem com 1 ou 2 apps.
-    const buildRing = (items, ringRatio, duration) => {
+    // Quantidade de órbitas cresce com o número de apps (no máximo ~8
+    // por órbita), e os raios se espalham entre o avatar central e a
+    // borda do palco — assim a tela continua legível e sem sobreposição
+    // por mais apps que o admin cadastre para o aluno.
+    const MAX_PER_RING = 8;
+    const CENTER_RATIO = 0.13; // raio do avatar central (26% de largura ÷ 2)
+    const EDGE_RATIO = 0.50;   // borda do palco
+    const RING_MIN = 0.20, RING_MAX = 0.40;
+    const ringCount = Math.max(1, Math.ceil(list.length / MAX_PER_RING));
+
+    const rings = [];
+    let cursor = 0;
+    for (let r = 0; r < ringCount; r++) {
+        const ringRatio = ringCount === 1 ? 0.33 : RING_MIN + (RING_MAX - RING_MIN) * (r / (ringCount - 1));
+        const countForRing = Math.ceil((list.length - cursor) / (ringCount - r));
+        const items = list.slice(cursor, cursor + countForRing);
+        cursor += items.length;
+        rings.push({ ringRatio, items, duration: 80 + r * 30 });
+    }
+
+    // Calcula o tamanho de cada planeta considerando DOIS limites: o
+    // espaço angular na própria órbita (circunferência ÷ apps ali) e o
+    // espaço radial até a órbita vizinha (ou até o avatar central /
+    // borda do palco, nas órbitas interna e externa) — sem isso, órbitas
+    // próximas ainda se sobrepunham mesmo com boa distribuição angular.
+    const buildRing = ({ items, ringRatio, duration }, ringIndex) => {
         if (!items.length) return "";
         const radius = stageSize * ringRatio;
         const arcPerItem = (2 * Math.PI * radius) / items.length;
-        const planetSize = Math.max(44, Math.min(82, arcPerItem * 0.62));
+        const angularLimit = arcPerItem * 0.62;
+
+        const prevRatio = ringIndex === 0 ? CENTER_RATIO : rings[ringIndex - 1].ringRatio;
+        const nextRatio = ringIndex === rings.length - 1 ? EDGE_RATIO : rings[ringIndex + 1].ringRatio;
+        const radialLimit = Math.min(ringRatio - prevRatio, nextRatio - ringRatio) * stageSize * 1.7;
+
+        const planetSize = Math.max(34, Math.min(82, angularLimit, radialLimit));
         return items.map((a, i) => {
             const delay = -((i / items.length) * duration);
             const isFocused = state.alunoFocusId === a.id;
@@ -282,19 +312,30 @@ function renderAlunoGrid() {
         }).join("");
     };
 
-    planetsRoot.innerHTML = buildRing(ring1, 0.34, 90) + buildRing(ring2, 0.47, 130);
+    planetsRoot.innerHTML = rings.map(buildRing).join("");
     planetsRoot.classList.toggle("has-focus", !!state.alunoFocusId);
     planetsRoot.classList.toggle("paused", !!state.alunoFocusId);
+
+    if (ringsRoot) {
+        ringsRoot.innerHTML = rings.map(r => `<div class="orbit-ring" style="width:${r.ringRatio * 200}%; height:${r.ringRatio * 200}%;"></div>`).join("");
+    }
 
     renderOrbitFocusCard(list.find(a => a.id === state.alunoFocusId) || null);
 }
 
-function renderOrbitFocusCard(app) {
+function renderOrbitFocusCard(app, emptyMessage) {
     const root = document.getElementById("orbitFocusCard");
     if (!root) return;
-    if (!app) { root.innerHTML = ""; return; }
-    root.innerHTML = `
-        <div class="orbit-focus-card">
+    if (!app && !emptyMessage) {
+        root.classList.remove("active");
+        root.innerHTML = "";
+        return;
+    }
+    root.classList.add("active");
+    root.innerHTML = emptyMessage
+        ? `<div class="orbit-focus-card" onclick="event.stopPropagation()"><div class="empty-state">${emptyMessage}</div></div>`
+        : `
+        <div class="orbit-focus-card" onclick="event.stopPropagation()">
             <div class="orbit-focus-icon" style="background:linear-gradient(135deg, ${app.corPrimaria || '#334155'}, ${app.corSecundaria || '#475569'});">${app.icone || '📦'}</div>
             <div class="orbit-focus-name">${app.nome}</div>
             <div class="orbit-focus-phrase">${app.descricao || ''}</div>
