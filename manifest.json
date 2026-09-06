@@ -1,0 +1,16 @@
+{
+  "name": "Gibabit - Portal de Aplicações",
+  "short_name": "Gibabit",
+  "description": "Painel de gestão de aplicações escolares GIBABIT.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0b1220",
+  "orientation": "any",
+  "icons": [
+    { "src": "images/logo1.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/logo1.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/logo1.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

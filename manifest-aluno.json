@@ -1,0 +1,16 @@
+{
+  "name": "Gibabit - Autoatendimento do Aluno",
+  "short_name": "Gibabit Aluno",
+  "description": "Autoatendimento do aluno GIBABIT: acesso rápido aos aplicativos liberados.",
+  "start_url": "/?modo=aluno",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0b1220",
+  "orientation": "any",
+  "icons": [
+    { "src": "images/logo1.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/logo1.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/logo1.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

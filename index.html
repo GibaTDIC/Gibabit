@@ -7,6 +7,19 @@
 <meta name="description" content="Painel de gestão de aplicações GIBABIT: crie, edite, publique e organize sistemas escolares sem alterar código.">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#0b1220">
+<link rel="apple-touch-icon" href="images/logo1.png">
+<link rel="manifest" id="manifestLink" href="manifest.json">
+<script>
+// Dois manifestos instaláveis a partir da mesma página: quem acessa
+// com ?modo=aluno (o atalho do tablet da escola) instala um ícone
+// próprio que já abre direto no autoatendimento; o link geral do
+// site instala o portal completo. Precisa trocar antes da página
+// carregar pro navegador considerar o app instalável corretamente.
+if (new URLSearchParams(location.search).get("modo") === "aluno") {
+    document.getElementById("manifestLink").setAttribute("href", "manifest-aluno.json");
+}
+</script>
 </head>
 <body>
 

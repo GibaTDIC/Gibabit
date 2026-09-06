@@ -122,37 +122,46 @@ const DEFAULT_APPS = [
     }
 ];
 
-async function loadState() {
-    try {
-        const snap = await appsCol.get();
-        if (snap.empty) {
-            state.apps = DEFAULT_APPS;
-            await saveApps();
-        } else {
-            state.apps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        }
-    } catch (e) {
-        console.error("Erro ao carregar aplicativos do Firestore:", e);
-        state.apps = DEFAULT_APPS;
-    }
-    try {
-        const snap = await catsCol.get();
-        if (snap.empty) {
-            state.categories = DEFAULT_CATEGORIES;
-            await saveCats();
-        } else {
-            state.categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        }
-    } catch (e) {
-        console.error("Erro ao carregar categorias do Firestore:", e);
-        state.categories = DEFAULT_CATEGORIES;
-    }
-
+// Escuta o Firestore em tempo real (em vez de carregar uma vez só) pra
+// que qualquer mudança feita pelo admin — publicar, editar, arquivar —
+// apareça sozinha em toda tela aberta, inclusive no tablet da escola,
+// sem precisar recarregar a página.
+function loadState() {
     state.favorites = loadLocal(STORAGE_FAVS, []);
     state.recent = loadLocal(STORAGE_RECENT, []);
     state.myUsage = loadLocal(STORAGE_MYUSAGE, {});
 
-    renderAll();
+    let appsSeeded = false;
+    appsCol.onSnapshot(async (snap) => {
+        if (snap.empty) {
+            if (appsSeeded) return;
+            appsSeeded = true;
+            state.apps = DEFAULT_APPS;
+            await saveApps();
+            return;
+        }
+        state.apps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAll();
+    }, (e) => {
+        console.error("Erro ao sincronizar aplicativos do Firestore:", e);
+        if (!state.apps.length) { state.apps = DEFAULT_APPS; renderAll(); }
+    });
+
+    let catsSeeded = false;
+    catsCol.onSnapshot(async (snap) => {
+        if (snap.empty) {
+            if (catsSeeded) return;
+            catsSeeded = true;
+            state.categories = DEFAULT_CATEGORIES;
+            await saveCats();
+            return;
+        }
+        state.categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAll();
+    }, (e) => {
+        console.error("Erro ao sincronizar categorias do Firestore:", e);
+        if (!state.categories.length) { state.categories = DEFAULT_CATEGORIES; renderAll(); }
+    });
 }
 
 async function saveApps() {
@@ -1139,5 +1148,9 @@ async function deleteCategory(id) {
     if (window.ResizeObserver) new ResizeObserver(update).observe(header);
     else window.addEventListener("resize", update);
 })();
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(console.error));
+}
 
 loadState();
