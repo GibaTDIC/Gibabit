@@ -1086,4 +1086,17 @@ async function deleteCategory(id) {
     renderAll();
 }
 
+// O header é fixo (não sticky) pra garantir que nunca suma durante a
+// rolagem em nenhum navegador; como isso tira ele do fluxo normal,
+// mede a altura real (que muda entre desktop/mobile e com/sem admin)
+// e empurra o conteúdo pra baixo na mesma medida.
+(function syncHeaderHeight() {
+    const header = document.querySelector("header");
+    if (!header) return;
+    const update = () => document.documentElement.style.setProperty("--header-h", header.offsetHeight + "px");
+    update();
+    if (window.ResizeObserver) new ResizeObserver(update).observe(header);
+    else window.addEventListener("resize", update);
+})();
+
 loadState();
