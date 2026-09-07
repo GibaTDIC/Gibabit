@@ -40,6 +40,14 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
     if (event.request.method !== "GET") return;
+
+    // Deixa as chamadas do Firestore (e qualquer API do Google) passarem
+    // direto, sem a gente interceptar — ele já cuida do próprio cache
+    // offline via IndexedDB, e embrulhar esse tráfego aqui podia
+    // atrapalhar o canal de dados em tempo real dele.
+    const url = new URL(event.request.url);
+    if (url.hostname.endsWith("googleapis.com") || url.hostname.endsWith("google.com")) return;
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {
