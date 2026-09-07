@@ -9,6 +9,17 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+
+// Guarda uma cópia local dos dados (IndexedDB) pra os apps/categorias
+// continuarem aparecendo mesmo sem internet, no app instalado.
+db.enablePersistence().catch((e) => {
+    if (e.code !== "failed-precondition" && e.code !== "unimplemented") {
+        console.error("Erro ao ativar persistência offline:", e);
+    }
+    // failed-precondition = já tem outra aba aberta com persistência ativa;
+    // unimplemented = navegador não suporta. Nos dois casos, o app
+    // continua funcionando normalmente, só sem cache offline nessa aba.
+});
 const appsCol = db.collection("Aplicativos");
 const catsCol = db.collection("Categorias");
 const adminsCol = db.collection("admins");
