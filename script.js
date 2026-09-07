@@ -12,13 +12,14 @@ const auth = firebase.auth();
 
 // Guarda uma cópia local dos dados (IndexedDB) pra os apps/categorias
 // continuarem aparecendo mesmo sem internet, no app instalado.
-db.enablePersistence().catch((e) => {
-    if (e.code !== "failed-precondition" && e.code !== "unimplemented") {
+// synchronizeTabs evita que a persistência falhe só porque o site
+// também está aberto em outra aba/navegador ao mesmo tempo.
+db.enablePersistence({ synchronizeTabs: true }).catch((e) => {
+    if (e.code !== "unimplemented") {
         console.error("Erro ao ativar persistência offline:", e);
     }
-    // failed-precondition = já tem outra aba aberta com persistência ativa;
-    // unimplemented = navegador não suporta. Nos dois casos, o app
-    // continua funcionando normalmente, só sem cache offline nessa aba.
+    // unimplemented = navegador não suporta; o app segue funcionando
+    // normalmente, só sem cache offline dos dados.
 });
 const appsCol = db.collection("Aplicativos");
 const catsCol = db.collection("Categorias");
@@ -76,6 +77,15 @@ function setViewMode(mode) {
 }
 
 function uid() { return 'a' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+// Mensagem extra pro estado vazio quando é bem provável que a causa
+// seja "sem internet e ainda sem dados salvos no aparelho" (em vez de
+// simplesmente nenhum app cadastrado / filtro sem resultado).
+function offlineEmptyHint() {
+    return (typeof navigator !== "undefined" && navigator.onLine === false)
+        ? " Parece que você está sem internet e ainda não carregou os dados neste aparelho — conecte-se pelo menos uma vez."
+        : "";
+}
 function nowIso() { return new Date().toISOString(); }
 function fmtDate(iso) {
     if (!iso) return "-";
@@ -273,7 +283,8 @@ function renderAlunoGrid() {
     if (!list.length) {
         planetsRoot.innerHTML = "";
         if (ringsRoot) ringsRoot.innerHTML = "";
-        renderOrbitFocusCard(null, "Nenhum aplicativo disponível no momento.");
+        const hint = state.apps.length ? '' : offlineEmptyHint();
+        renderOrbitFocusCard(null, "Nenhum aplicativo disponível no momento." + hint);
         return;
     }
 
@@ -651,7 +662,8 @@ function renderGrid() {
     const list = getFilteredSortedApps();
     const grid = document.getElementById("cardsGrid");
     if (!list.length) {
-        grid.innerHTML = `<div class="empty-state">Nenhum aplicativo encontrado. ${state.adminMode ? 'Clique em "Novo Programa" para cadastrar o primeiro.' : ''}</div>`;
+        const hint = state.apps.length ? '' : (state.adminMode ? '' : offlineEmptyHint());
+        grid.innerHTML = `<div class="empty-state">Nenhum aplicativo encontrado.${hint} ${state.adminMode ? 'Clique em "Novo Programa" para cadastrar o primeiro.' : ''}</div>`;
         return;
     }
     const favSet = new Set(state.favorites);
