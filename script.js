@@ -766,7 +766,17 @@ async function openApp(id) {
         : app.url;
 
     if (targetUrl && targetUrl !== "#") {
-        window.open(construirUrlComEmail(targetUrl), "_blank");
+        const finalUrl = construirUrlComEmail(targetUrl);
+        if (state.viewMode === "aluno") {
+            // No modo aluno (tablet de autoatendimento, geralmente em
+            // navegador de kiosk) navega na mesma janela em vez de abrir
+            // uma aba nova — kiosks como o Fully Kiosk Browser bloqueiam
+            // pop-up/nova janela por padrão, e travar nisso deixaria o
+            // botão sem funcionar.
+            location.href = finalUrl;
+        } else {
+            window.open(finalUrl, "_blank");
+        }
     } else {
         alert(app.nome + " ainda não possui uma URL configurada.");
     }
