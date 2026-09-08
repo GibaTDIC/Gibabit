@@ -3,7 +3,7 @@
 // continua se atualizando sozinho normalmente. Só usa a cópia
 // guardada quando a rede falha de verdade (offline), pra o app
 // instalado continuar abrindo sem internet.
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = "gibabit-shell-" + CACHE_VERSION;
 
 const SHELL_ASSETS = [
@@ -14,7 +14,7 @@ const SHELL_ASSETS = [
     "manifest-aluno.json",
     "images/logo.png",
     "images/logo1.png",
-    "images/logo-escola-sd.jpg",
+    "images/logo-escola-sd.png",
     "images/icon-192.png",
     "images/icon-512.png",
     "images/icon-180.png",
